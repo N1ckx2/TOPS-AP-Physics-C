@@ -4,9 +4,7 @@
 % Nicholas Vadivelu, Cheng Lin, Parnika Godkhindi, Khari Thomas
 % Received 22 December 2016
 
-%STILL NOT WORKING
-
-%%Simulation Information 
+%%Simulation Information
 %{ 
 This program simulates the magnetic field around two helmholtz coils, with
 the option to also simulate a third coil interfering (controlled by
@@ -115,35 +113,35 @@ d_loop3 = rot_x3*rot_y3*rot_z3*[d_loopx; d_loopy; d_loopz];
 
 %% Simulation of b-field
 n = 1;
-%h = waitbar(0,'Simulating Magnetic Field...');%creates a progress par for simulation
-%lengthofsim = range/step^3*numpts;
+h = waitbar(0,'Simulating Magnetic Field...');%creates a progress par for simulation
+lengthofsim = range/step^3*numpts;
 for i = drange(coordrange) %every x point
     for j = drange(coordrange) %every y point
         for k = drange(coordrange) %every z point
             %for m = drange(1:numpts) %evert point for the solenoids
                 %Create r vector that is from position to dL on loop
                 r = [i - loop(1, :); j - loop(1, :); k - loop(3, :)];
-                r2 =[i - loop2(1, :); j - loop2(2, :); k - loop2(3, :)];
-                r3 =[i - loop3(1, :); j - loop3(3, :); k - loop3(3, :)];
+                r2 =[i - loop2(1, :); j - loop(2, :); k - loop2(3, :)];
+                r3 =[i - loop3(1, :); j - loop(3, :); k - loop3(3, :)];
                 
                 %Sum of the dB for each point on the loop 1 in accordance with Biot-Savart
                 normR = sqrt(r2(1, :).^2 + r2(2, :).^2 + r2(3, :).^2); 
-                B(1, n) = B(1, n) + sum( (d_loop(2, :).*r(3, :) - r(2, :).*d_loop(3, :)) ./ normR.^3);
-                B(2, n) = B(2, n) - sum( (d_loop(1, :).*r(3, :) - r(1, :).*d_loop(3, :)) ./ normR.^3);
-                B(3, n) = B(3, n) + sum( (d_loop(1, :).*r(2, :) - r(1, :).*d_loop(2, :)) ./ normR.^3);
+                B(1, n) = B(1, n) + sum( (d_loop(2, :)*r(3) - r(2)*d_loop(3, :)) ./ normR.^3);
+                B(2, n) = B(2, n) - sum( (d_loop(1, :)*r(3) - r(1)*d_loop(3, :)) ./ normR.^3);
+                B(3, n) = B(3, n) + sum( (d_loop(1, :)*r(2) - r(1)*d_loop(2, :)) ./ normR.^3);
                 
                 %Sum of the dB for each point on the loop 2 in accordance with Biot-Savart
                 normR2 = sqrt(r3(1, :).^2 + r3(2, :).^2 + r3(3, :).^2); 
-                B(1, n) = B(1, n) + sum( (d_loop2(2, :).*r2(3, :) - r2(2, :).*d_loop2(3, :)) ./ normR2.^3);
-                B(2, n) = B(2, n) - sum( (d_loop2(1, :).*r2(3, :) - r2(1, :).*d_loop2(3, :)) ./ normR2.^3);
-                B(3, n) = B(3, n) + sum( (d_loop2(1, :).*r2(2, :) - r2(1, :).*d_loop2(2, :)) ./ normR2.^3);
+                B(1, n) = B(1, n) + sum( (d_loop2(2, :)*r2(3) - r2(2)*d_loop2(3, :)) ./ normR2.^3);
+                B(2, n) = B(2, n) - sum( (d_loop2(1, :)*r2(3) - r2(1)*d_loop2(3, :)) ./ normR2.^3;
+                B(3, n) = B(3, n) + sum( (d_loop2(1, :)*r2(2) - r2(1)*d_loop2(2, :)) ./ normR2.^3;
                 
                 if proximateSolenoid 
                     %Sum of the dB for each point on the loop 3 in accordance with Biot-Savart
                     normR3 = sqrt(r(1, :).^2 + r(2, :).^2 + r(3, :).^2); 
-                    B(1, n) = B(1, n) + sum( (d_loop3(2, :).*r3(3, :) - r3(2, :).*d_loop3(3, :)) ./ normR3.^3);
-                    B(2, n) = B(2, n) - sum( (d_loop3(1, :).*r3(3, :) - r3(1, :).*d_loop3(3, :)) ./ normR3.^3);
-                    B(3, n) = B(3, n) + sum( (d_loop3(1, :).*r3(2, :) - r3(1, :).*d_loop3(2, :)) ./ normR3.^3);
+                    B(1, n) = B(1, n) + (d_loop3(2, :)*r3(3) - r3(2)*d_loop3(3, :)) / normR3.^3;
+                    B(2, n) = B(2, n) - (d_loop3(1, :)*r3(3) - r3(1)*d_loop3(3, :)) / normR3.^3;
+                    B(3, n) = B(3, n) + (d_loop3(1, :)*r3(2) - r3(1)*d_loop3(2, :)) / normR3.^3;
                 end
             %end
             %Multiply each magnetic field by the constants in Biot-Savart to get the result in T
@@ -155,7 +153,7 @@ for i = drange(coordrange) %every x point
     end
     %waitbar(i/range*step,h);
 end
-%delete(h); %delete progress bar
+delete(h); %delete progress bar
 
 %% Plotting the field
 figure('Position', [100, 100, 1200, 450]); %creates a field of size 1200x450

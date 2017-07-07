@@ -4,9 +4,7 @@
 % Nicholas Vadivelu, Cheng Lin, Parnika Godkhindi, Khari Thomas
 % Received 22 December 2016
 
-%STILL NOT WORKING
-
-%%Simulation Information 
+%%Simulation Information
 %{ 
 This program simulates the magnetic field around two helmholtz coils, with
 the option to also simulate a third coil interfering (controlled by
@@ -20,7 +18,7 @@ the coil (controls dB), and various graph properties.
 Be sure to rotate, zoom, and manipulate the generated figure.
 %}
 
-%Time to run with drange, 35.67s
+%Time to Run: 43.01s normally, with drange
 close all;
 
 %% Constants and Simulation Properties
@@ -36,7 +34,7 @@ coil_height = 0.01975;
 range = 0.5; %x, y, and z coordinate
 step = range/20; %Fidelity of vector intervals
 numpts = 360; %number of points on the coil
-proximateSolenoid = false; %enable or disable the solenoid
+proximateSolenoid = true; %enable or disable the solenoid
 
 %Data Visualization Properties
 quiver_step = 11; %density of the quiver plot
@@ -55,11 +53,16 @@ rot2 = [0 0 0]*pi/180;
 rot3 = [0 60 0]*pi/180;
 
 %% Defining x, y, and z coordinates to be simulated and rotation matrices
-coordrange = -range/2:step:range/2-step;
-coordinates = zeros(3, (range/step)^3);
-coordinates(1, :) = kron(coordrange, ones(1, (range/step)^2));
-coordinates(2, :) = repmat(kron(coordrange,ones(1, (range/step))), size(coordrange));
-coordinates(3, :) = repmat(coordrange, size(coordrange).^2);
+coordinates = zeros(3, (range/step)^3); 
+n = 1;
+for i = 1:range/step
+    for j = 1:range/step
+        for k = 1:range/step
+            coordinates(:, n) = [i*step-range/2 j*step-range/2 k*step-range/2];
+            n = n + 1;
+        end
+    end
+end
 
 %Components of Magnetic Field
 B = zeros(size(coordinates));
@@ -117,35 +120,32 @@ d_loop3 = rot_x3*rot_y3*rot_z3*[d_loopx; d_loopy; d_loopz];
 n = 1;
 %h = waitbar(0,'Simulating Magnetic Field...');%creates a progress par for simulation
 %lengthofsim = range/step^3*numpts;
-for i = drange(coordrange) %every x point
-    for j = drange(coordrange) %every y point
-        for k = drange(coordrange) %every z point
-            %for m = drange(1:numpts) %evert point for the solenoids
+for i = drange(1:range/step) %every x point
+    for j = drange(1:range/step) %every y point
+        for k = drange(1:range/step) %every z point
+            for m = drange(1:numpts) %evert point for the solenoids
                 %Create r vector that is from position to dL on loop
-                r = [i - loop(1, :); j - loop(1, :); k - loop(3, :)];
-                r2 =[i - loop2(1, :); j - loop2(2, :); k - loop2(3, :)];
-                r3 =[i - loop3(1, :); j - loop3(3, :); k - loop3(3, :)];
+                r = [i*step-range/2 - loop(1, m) j*step-range/2 - loop(1, m) k*step-range/2 - loop(3, m)];
+                r2 =[i*step-range/2 - loop2(1, m) j*step-range/2 - loop2(2, m) k*step-range/2 - loop2(3, m)];
+                r3 =[i*step-range/2 - loop3(1, m) j*step-range/2 - loop3(3, m) k*step-range/2 - loop3(3, m)];
                 
                 %Sum of the dB for each point on the loop 1 in accordance with Biot-Savart
-                normR = sqrt(r2(1, :).^2 + r2(2, :).^2 + r2(3, :).^2); 
-                B(1, n) = B(1, n) + sum( (d_loop(2, :).*r(3, :) - r(2, :).*d_loop(3, :)) ./ normR.^3);
-                B(2, n) = B(2, n) - sum( (d_loop(1, :).*r(3, :) - r(1, :).*d_loop(3, :)) ./ normR.^3);
-                B(3, n) = B(3, n) + sum( (d_loop(1, :).*r(2, :) - r(1, :).*d_loop(2, :)) ./ normR.^3);
+                B(1, n) = B(1, n) + (d_loop(2, m)*r(3) - r(2)*d_loop(3, m)) / norm(r)^3;
+                B(2, n) = B(2, n) - (d_loop(1, m)*r(3) - r(1)*d_loop(3, m)) / norm(r)^3;
+                B(3, n) = B(3, n) + (d_loop(1, m)*r(2) - r(1)*d_loop(2, m)) / norm(r)^3;
                 
                 %Sum of the dB for each point on the loop 2 in accordance with Biot-Savart
-                normR2 = sqrt(r3(1, :).^2 + r3(2, :).^2 + r3(3, :).^2); 
-                B(1, n) = B(1, n) + sum( (d_loop2(2, :).*r2(3, :) - r2(2, :).*d_loop2(3, :)) ./ normR2.^3);
-                B(2, n) = B(2, n) - sum( (d_loop2(1, :).*r2(3, :) - r2(1, :).*d_loop2(3, :)) ./ normR2.^3);
-                B(3, n) = B(3, n) + sum( (d_loop2(1, :).*r2(2, :) - r2(1, :).*d_loop2(2, :)) ./ normR2.^3);
+                B(1, n) = B(1, n) + (d_loop2(2, m)*r2(3) - r2(2)*d_loop2(3, m)) / norm(r2)^3;
+                B(2, n) = B(2, n) - (d_loop2(1, m)*r2(3) - r2(1)*d_loop2(3, m)) / norm(r2)^3;
+                B(3, n) = B(3, n) + (d_loop2(1, m)*r2(2) - r2(1)*d_loop2(2, m)) / norm(r2)^3;
                 
                 if proximateSolenoid 
                     %Sum of the dB for each point on the loop 3 in accordance with Biot-Savart
-                    normR3 = sqrt(r(1, :).^2 + r(2, :).^2 + r(3, :).^2); 
-                    B(1, n) = B(1, n) + sum( (d_loop3(2, :).*r3(3, :) - r3(2, :).*d_loop3(3, :)) ./ normR3.^3);
-                    B(2, n) = B(2, n) - sum( (d_loop3(1, :).*r3(3, :) - r3(1, :).*d_loop3(3, :)) ./ normR3.^3);
-                    B(3, n) = B(3, n) + sum( (d_loop3(1, :).*r3(2, :) - r3(1, :).*d_loop3(2, :)) ./ normR3.^3);
+                    B(1, n) = B(1, n) + (d_loop3(2, m)*r3(3) - r3(2)*d_loop3(3, m)) / norm(r3)^3;
+                    B(2, n) = B(2, n) - (d_loop3(1, m)*r3(3) - r3(1)*d_loop3(3, m)) / norm(r3)^3;
+                    B(3, n) = B(3, n) + (d_loop3(1, m)*r3(2) - r3(1)*d_loop3(2, m)) / norm(r3)^3;
                 end
-            %end
+            end
             %Multiply each magnetic field by the constants in Biot-Savart to get the result in T
             B(1, n) = B(1, n)*mu_0*current/(4*pi);
             B(2, n) = B(2, n)*mu_0*current/(4*pi);
@@ -153,9 +153,9 @@ for i = drange(coordrange) %every x point
             n = n + 1;
         end
     end
-    %waitbar(i/range*step,h);
+    waitbar(i/range*step,h);
 end
-%delete(h); %delete progress bar
+delete(h); %delete progress bar
 
 %% Plotting the field
 figure('Position', [100, 100, 1200, 450]); %creates a field of size 1200x450

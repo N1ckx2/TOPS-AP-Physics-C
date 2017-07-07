@@ -17,6 +17,8 @@ the coil (controls dB), and various graph properties.
 
 Be sure to rotate, zoom, and manipulate the generated figure.
 %}
+
+%Time to Run: 43.01s normally, 51.19s with drange (why slower?)
 close all;
 
 %% Constants and Simulation Properties
@@ -124,8 +126,8 @@ for i = 1:range/step %every x point
             for m = 1:numpts %evert point for the solenoids
                 %Create r vector that is from position to dL on loop
                 r = [i*step-range/2 - loop(1, m) j*step-range/2 - loop(1, m) k*step-range/2 - loop(3, m)];
-                r2 =[i*step-range/2 - loop2(1, m) j*step-range/2 - loop(2, m) k*step-range/2 - loop2(3, m)];
-                r3 =[i*step-range/2 - loop3(1, m) j*step-range/2 - loop(3, m) k*step-range/2 - loop3(3, m)];
+                r2 =[i*step-range/2 - loop2(1, m) j*step-range/2 - loop2(2, m) k*step-range/2 - loop2(3, m)];
+                r3 =[i*step-range/2 - loop3(1, m) j*step-range/2 - loop3(3, m) k*step-range/2 - loop3(3, m)];
                 
                 %Sum of the dB for each point on the loop 1 in accordance with Biot-Savart
                 B(1, n) = B(1, n) + (d_loop(2, m)*r(3) - r(2)*d_loop(3, m)) / norm(r)^3;
